@@ -66,5 +66,12 @@ contract SimpleAuction{
             }
         return true;
     }
+   function auctionEnd() public {
 
+        require (now >= auctionEndTime, "Auction has not ended yet.");
+        require (!ended, "auctionEnd has already been called.");
+
+        ended = true;
+        emit auctionEnded(highestBidder, highestBid);
+    }
 }

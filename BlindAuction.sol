@@ -145,4 +145,19 @@ contract BlindAuction{
             }
         }
 
+	 function auctionEnd() 
+            public 
+            onlyAfter(revealEnd) 
+        {
+        
+            require(!ended);
+            
+            emit AuctionEnded(highestBidder, highestBid);
+            
+            ended = true;
+            
+            beneficiary.transfer(highestBid);
+            
+        }
+
 }

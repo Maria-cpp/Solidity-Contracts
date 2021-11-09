@@ -18,15 +18,15 @@ contract BlindAuction{
     
     bool public ended;
     
-    mapping(address => uint) public bids;
+    mapping(address => Bid[]) public bids;
     
-    addrerss public highestBidder;
+    address public highestBidder;
     
     uint public highestBid;
     
-    mapping(addrerss => uint) pendingreturns;
+    mapping(address => uint) pendingReturns;
     
-    event auctionEnded(addrerss winner, uint highestBid);
+    event auctionEnded(address winner, uint highestBid);
     
     modifier onlyBefore(uint _time) { require(now < _time); _; }
     
@@ -42,7 +42,7 @@ contract BlindAuction{
         
         ) public {
             
-            beneficiary = _beneficiary;
+            benficiary = _beneficiary;
             biddingEnd = now + _biddingTime;
             revealEnd = biddingEnd + _revealTime;
         }
@@ -67,7 +67,7 @@ contract BlindAuction{
     function reveal(
         uint[] memory _values,
         
-        uint[] memory _fake,
+        bool[] memory _fake,
         
         bytes32[] memory _secret
         
@@ -86,13 +86,13 @@ contract BlindAuction{
             
             require(_fake.length == length);
             
-            require(secret.length == length);
+            require(_secret.length == length);
             
             uint refund;
             
             for(uint i=0; i< length; i++){
                 
-                Bid storage bidToCheck = bids[msg.Sender][i];
+                Bid storage bidToCheck = bids[msg.sender][i];
                 (uint value, bool fake, bytes32 secret) = (_values[i], _fake[i], _secret[i]);
             
                 if(bidToCheck.blindBid != keccak256(abi.encodePacked(value, fake, secret))){
@@ -110,7 +110,7 @@ contract BlindAuction{
                 bidToCheck.blindBid = bytes32(0);
             }
             
-            msg.Sender.transfer(refund);
+            msg.sender.transfer(refund);
         }
         
         function placeBid(address bidder, uint value) internal returns (bool success){
@@ -152,7 +152,7 @@ contract BlindAuction{
         
             require(!ended);
             
-            emit AuctionEnded(highestBidder, highestBid);
+            emit auctionEnded(highestBidder, highestBid);
             
             ended = true;
             

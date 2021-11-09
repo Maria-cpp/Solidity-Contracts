@@ -47,6 +47,9 @@ contract BlindAuction{
             revealEnd = biddingEnd + _revealTime;
         }
         
+  function generateBlindedBidBytes32(uint value, bool fake) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(value, fake));
+    }
     
     function bid(bytes32 _blindedBid)
        
@@ -68,9 +71,7 @@ contract BlindAuction{
         uint[] memory _values,
         
         bool[] memory _fake,
-        
-        bytes32[] memory _secret
-        
+              
         )
         
         public
@@ -85,33 +86,27 @@ contract BlindAuction{
             require (_values.length == length);
             
             require(_fake.length == length);
-            
-            require(_secret.length == length);
-            
-            uint refund;
-            
+                               
             for(uint i=0; i< length; i++){
                 
                 Bid storage bidToCheck = bids[msg.sender][i];
-                (uint value, bool fake, bytes32 secret) = (_values[i], _fake[i], _secret[i]);
+                (uint value, bool fake) = (_values[i], _fake[i]);
             
-                if(bidToCheck.blindBid != keccak256(abi.encodePacked(value, fake, secret))){
+                if(bidToCheck.blindBid != keccak256(abi.encodePacked(value, fake))){
                     continue;
                 }
-                
-                refund += bidToCheck.deposit;
-                
+                     
                 if(!fake && bidToCheck.deposit >=value){
                     
-                    if(placeBid(msg.Sender, value))
-                        refund -= value;
+                    if!(placeBid(msg.Sender, value)){
+                        msg.sender.transfer(bidToCheck.deposit);
+			}
                 }
                 
                 bidToCheck.blindBid = bytes32(0);
             }
             
-            msg.sender.transfer(refund);
-        }
+         }
         
         function placeBid(address bidder, uint value) internal returns (bool success){
             

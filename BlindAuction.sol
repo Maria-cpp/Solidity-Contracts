@@ -156,7 +156,7 @@ contract BlindAuction{
             
             ended = true;
             
-            beneficiary.transfer(highestBid);
+            benficiary.transfer(highestBid);
             
         }
 
